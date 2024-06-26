@@ -1,13 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { MermaidComponent } from "./diagram";
-import { extractMermaidCode, generateResponse } from "../lib/utils";
+import OpenAI from "openai";
+import {
+  extractMermaidCode,
+  generateGPTResponse,
+  generateOllamaResponse,
+} from "../lib/utils";
+
+let openai;
 
 export function ChatInterfaceComponent() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [diagramSource, setDiagramSource] = useState("");
+  const [openAIApiKey, setOpenAIAPIKey] = useState(
+    process.env.REACT_APP_OPENAI_API_KEY
+  );
 
   const handleSend = async () => {
     if (input.trim()) {
@@ -17,9 +27,11 @@ export function ChatInterfaceComponent() {
       setLoading(true);
 
       try {
-        const response = await generateResponse("llama3", newMessages);
+        // const response = await generateOllamaResponse("llama3", newMessages);
+        let extractedMermaidCode;
+        let response = await generateGPTResponse(openai, "gpt-4o", newMessages);
 
-        let extractedMermaidCode = extractMermaidCode(response);
+        [extractedMermaidCode] = extractMermaidCode(response);
         if (extractedMermaidCode) {
           setDiagramSource(extractedMermaidCode[0]);
         }
@@ -33,9 +45,16 @@ export function ChatInterfaceComponent() {
     }
   };
 
+  useEffect(() => {
+    openai = new OpenAI({
+      apiKey: openAIApiKey,
+      dangerouslyAllowBrowser: true,
+    });
+  }, [openAIApiKey]);
+
   return (
     <div className="App flex h-screen bg-gray-100">
-      <div className="chat-window w-2/3 flex flex-col border-r border-gray-300 bg-white">
+      <div className="chat-window w-1/2 flex flex-col border-r border-gray-300 bg-white">
         <div className="messages flex-1 p-4 overflow-y-scroll">
           {messages.map((msg, index) => (
             <div
@@ -77,7 +96,7 @@ export function ChatInterfaceComponent() {
           </button>
         </div>
       </div>
-      <div className="extra-content w-1/3 p-4">
+      <div className="extra-content w-1/2 p-4">
         <div className="h-full flex justify-center items-center text-gray-500">
           <MermaidComponent id={0} source={diagramSource} />
         </div>
