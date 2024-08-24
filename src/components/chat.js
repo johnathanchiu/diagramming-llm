@@ -1,35 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+
+import OpenAI from "openai";
 
 import { MermaidComponent } from "./diagram";
-import OpenAI from "openai";
-import {
-  extractMermaidCode,
-  generateGPTResponse,
-  generateOllamaResponse,
-} from "../lib/utils";
+import { extractMermaidCode, generateResponse } from "../lib/utils";
 
-let openai;
+const modelName = process.env.REACT_APP_LLM_MODEL_NAME;
+const openai = new OpenAI({
+  baseURL: process.env.REACT_APP_OLLAMA_URL,
+  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
 
 export function ChatInterfaceComponent() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [diagramSource, setDiagramSource] = useState("");
-  const [openAIApiKey, setOpenAIAPIKey] = useState(
-    process.env.REACT_APP_OPENAI_API_KEY
-  );
 
   const handleSend = async () => {
+    setInput("");
+
     if (input.trim()) {
       const newMessages = [...messages, { role: "user", content: input }];
       setMessages(newMessages);
-      setInput("");
       setLoading(true);
 
       try {
-        // const response = await generateOllamaResponse("llama3", newMessages);
         let extractedMermaidCode;
-        let response = await generateGPTResponse(openai, "gpt-4o", newMessages);
+        let response = await generateResponse(openai, modelName, newMessages);
 
         [extractedMermaidCode] = extractMermaidCode(response);
         if (extractedMermaidCode) {
@@ -44,13 +43,6 @@ export function ChatInterfaceComponent() {
       }
     }
   };
-
-  useEffect(() => {
-    openai = new OpenAI({
-      apiKey: openAIApiKey,
-      dangerouslyAllowBrowser: true,
-    });
-  }, [openAIApiKey]);
 
   return (
     <div className="App flex h-screen bg-gray-100">
