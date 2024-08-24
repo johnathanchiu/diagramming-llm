@@ -27,12 +27,11 @@ export function ChatInterfaceComponent() {
       setLoading(true);
 
       try {
-        let extractedMermaidCode;
         let response = await generateResponse(openai, modelName, newMessages);
 
-        [extractedMermaidCode] = extractMermaidCode(response);
-        if (extractedMermaidCode) {
-          setDiagramSource(extractedMermaidCode[0]);
+        let [mermaidSource, _] = extractMermaidCode(response);
+        if (mermaidSource) {
+          setDiagramSource(mermaidSource[0]);
         }
 
         setMessages([...newMessages, { role: "assistant", content: response }]);
