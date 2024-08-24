@@ -10,7 +10,7 @@ Some specific uses for this would by for educational purposes such as providing 
 
 ## Project Setup
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app). Additionally, added [tailwindcss](https://tailwindcss.com/) for styling.
 
 ### [1] Setting up LLM APIs
 
@@ -35,4 +35,5 @@ npm start
 
 ## TODOs
 
-- Add structured outputs via Outlines, other methods
+- [ ] Add structured outputs to generate valid mermaid.js code
+- [ ] Add UI piece to switch to a specific diagram's message on click
