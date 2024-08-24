@@ -1,49 +1,47 @@
-import streamlit.components.v1 as components
-import streamlit as st
+from openai import OpenAI
 
-from diagrammer.utils import generate_response, extract_mermaid_code
-
-
-MODEL = "codellama"
-
-st.title("Diagramming LLM")
+from diagrammer.model import MermaidDiagram, Node, Edge, Subgraph
 
 
-def mermaid(code: str) -> None:
-    components.html(
-        f"""
-        <pre class="mermaid">
-            {code}
-        </pre>
+client = OpenAI()
 
-        <script type="module">
-            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-            mermaid.initialize({{ startOnLoad: true }});
-        </script>
-        """
+
+def generate_mermaid(diagram: MermaidDiagram) -> str:
+    def node_to_mermaid(node):
+        if isinstance(node, Node):
+            return f'{node.id}["{node.label or node.id}"]'
+        elif isinstance(node, Edge):
+            return f'{node.source} -->{f"|{node.label}|" if node.label else ""} {node.target}'
+        elif isinstance(node, Subgraph):
+            inner_content = "\n".join([node_to_mermaid(n) for n in node.nodes])
+            return f"subgraph {node.title}\n{inner_content}\nend"
+
+    content = "\n".join([node_to_mermaid(node) for node in diagram.nodes])
+    return (
+        f"classDiagram\n{diagram.title}\n{content}"
+        if diagram.title
+        else f"classDiagram\n{content}"
     )
 
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+sys_prompt = "You are a tutor that creates visual diagrams that are outputted by generated mermaid.js code."
 
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
 
-# Accept user input
-if prompt := st.chat_input("What is up?"):
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
+def complete():
+    completion = client.beta.chat.completions.parse(
+        model="gpt-4o-2024-08-06",
+        messages=[
+            {"role": "system", "content": sys_prompt},
+            {"role": "user", "content": "help me better understand the krebs cycle"},
+        ],
+        response_format=MermaidDiagram,
+    )
 
-    response = generate_response(MODEL, prompt, st.session_state.messages)
-    # mermaid_code = extract_mermaid_code(response)
-    # for mcode in mermaid_code:
-    #     mermaid(mcode)
-    with st.chat_message("assistant"):
-        st.markdown(response)
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    message = completion.choices[0].message
+    if message.parsed:
+        return generate_mermaid(message.parsed)
+    return None
+
+
+mermaid_code = complete()
+print(mermaid_code)
