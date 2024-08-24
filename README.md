@@ -24,7 +24,11 @@ For Ollama, follow the setup steps from their [repository](https://github.com/ol
 
 For ChatGPT, follow the instructions from their [site](https://platform.openai.com/docs/api-reference/introduction). Make sure to create an API key to use.
 
-### [2] Running Application
+### [2] Setup environment and API keys
+
+Run `cp .env.example .env` then follow the comments for putting proper values in your `.env` file.
+
+### [3] Running Application
 
 To start, run the following:
 
@@ -33,7 +37,9 @@ npm install
 npm start
 ```
 
-## TODOs
+## Future Ideas
+
+Feel free to contribute to this repository through PRs.
 
 - [ ] Add structured outputs to generate valid mermaid.js code
 - [ ] Add UI piece to switch to a specific diagram's message on click
