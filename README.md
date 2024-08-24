@@ -28,7 +28,7 @@ For ChatGPT, follow the instructions from their [site](https://platform.openai.c
 
 Run `cp .env.example .env` then follow the comments for putting proper values in your `.env` file.
 
-### [3] Running Application
+### [3] Running the application
 
 To start, run the following:
 
